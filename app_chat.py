@@ -4,6 +4,7 @@ from constants import search_number_messages
 from langchain_utils import initialize_chat_conversation
 from search_indexing import download_and_index_pdf
 import re
+import config
 
 
 def remove_url(url_to_remove):
@@ -15,8 +16,8 @@ def remove_url(url_to_remove):
 
 
 # Page title
-st.set_page_config(page_title='Talk with PDFs using LLMs - Beta')
-st.title('Talk with PDFs using LLMs - (Beta)')
+st.set_page_config(page_title='Talk with PDFs ')
+st.title('Talk with PDFs Prototype')
 
 # Initialize the faiss_index key in the session state. This can be used to avoid having to download and embed the same PDF
 # every time the user asks a question
@@ -39,12 +40,16 @@ if 'urls' not in st.session_state:
     st.session_state.urls = []
 
 with st.sidebar:
+    st.header('HERAEUS')
 
-    openai_api_key = st.text_input('Step 1 - OpenAI API Key:', type='password')
+    openai_api_key = config.api_key
+    # st.text_input('Step 1 - OpenAI API Key:', type='password')
+    # Displays a Dag & Drop Container to upload local PDF
+    pdf = st.file_uploader("Upload your PDF", type="pdf")
 
     # Add/Remove URLs form
     with st.form('urls-form', clear_on_submit=True):
-        url = st.text_input('Step 2 - URLs to relevant PDFs: ')
+        url = st.text_input('URLs to relevant PDFs: ')
         add_url_button = st.form_submit_button('Add')
         if add_url_button:
             if url not in st.session_state.urls:
@@ -53,9 +58,12 @@ with st.sidebar:
     # Display a container with the URLs added by the user so far
     with st.container():
         if st.session_state.urls:
-            st.header('URLs added:')
+            st.header('URL Document basket:')
+
             for url in st.session_state.urls:
-                st.write(url)
+                # "PDF: " +
+                urlName = url
+                st.write(urlName.split('/')[-1])
                 st.button(label='Remove', key=f"Remove {url}", on_click=remove_url, kwargs={'url_to_remove': url})
                 st.divider()
 
@@ -67,6 +75,7 @@ for message in st.session_state.messages:
 # React to user input
 if query_text := st.chat_input("Your message"):
 
+    # insert your Open AI Key
     os.environ['OPENAI_API_KEY'] = openai_api_key
 
     # Display user message in chat message container, and append to session state
@@ -75,7 +84,8 @@ if query_text := st.chat_input("Your message"):
 
     # Check if FAISS index already exists, or if it needs to be created as it includes new URLs
     session_urls = st.session_state.urls
-    if st.session_state['faiss_index']['index'] is None or set(st.session_state['faiss_index']['indexed_urls']) != set(session_urls):
+    if st.session_state['faiss_index']['index'] is None or set(st.session_state['faiss_index']['indexed_urls']) != set(
+            session_urls):
         st.session_state['faiss_index']['indexed_urls'] = session_urls
         with st.spinner('Downloading and indexing PDFs...'):
             faiss_index = download_and_index_pdf(session_urls)
@@ -91,7 +101,8 @@ if query_text := st.chat_input("Your message"):
         conversation = st.session_state['conversation_memory']
 
     # Search PDF snippets using the last few user messages
-    user_messages_history = [message['content'] for message in st.session_state.messages[-search_number_messages:] if message['role'] == 'user']
+    user_messages_history = [message['content'] for message in st.session_state.messages[-search_number_messages:] if
+                             message['role'] == 'user']
     user_messages_history = '\n'.join(user_messages_history)
 
     with st.spinner('Querying OpenAI GPT...'):

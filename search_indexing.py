@@ -23,12 +23,20 @@ def download_and_index_pdf(urls: list[str]) -> FAISS:
         return pages
 
     all_pages = []
+
     for url in urls:
         loader = PyPDFium2Loader(url)
         splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         pages = loader.load_and_split(splitter)
         pages = __update_metadata(pages, url)
         all_pages += pages
+    """""
+    for pdf in pdfs:
+        loader = pdf
+        splitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        pages = loader.load_and_split(splitter)
+        pages = __update_metadata(pages, pdf)
+        all_pages += pages """""
 
     faiss_index = FAISS.from_documents(all_pages, OpenAIEmbeddings())
 

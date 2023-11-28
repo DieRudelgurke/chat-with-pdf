@@ -53,8 +53,8 @@ class SnippetsBufferWindowMemory(ConversationBufferWindowMemory):
 
         # Reverse list of snippets and pages, in order to keep the most relevant at the top
         # Also prune the list to keep the buffer within the define size (k)
-        self.snippets = [snippet for snippet in reversed(self.snippets)][:self.k]
-        self.pages = [page for page in reversed(self.pages)][:self.k]
+        #self.snippets = [snippet for snippet in reversed(self.snippets)][:self.k]
+        #self.pages = [page for page in reversed(self.pages)][:self.k]
         to_return = ''.join(self.snippets)
 
         return {'snippets': to_return}
@@ -87,7 +87,7 @@ def initialize_chat_conversation(index: FAISS,
     The following snippets can be used to help you answer the questions:    
     {snippets}    
     The following is a friendly conversation between a customer and you. Please answer the customer's needs based on the provided snippets and the conversation history. Make sure to take the previous messages in consideration, as they contain additional context.
-    If the provided snippets don't include the answer, please say so, and don't try to make up an answer instead. Include in your reply the title of the document and the page from where your answer is coming from, if applicable.
+    If the provided snippets don't include the answer, please say so, and don't try to make up an answer instead. Include in your reply the title of the document and the page and the line from where your answer is coming from, if applicable. Answer if they write in German, in german.
 
     {history}    
     Customer: {input}
